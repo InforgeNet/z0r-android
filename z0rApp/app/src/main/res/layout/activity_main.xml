@@ -35,7 +35,7 @@
         android:layout_below="@+id/textView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:hint="(facoltativo) Custom link"
+        android:hint="(optional) Custom link"
         android:textColor="#FFF"
         android:textColorHint="#FFF"/>
 
