@@ -51,21 +51,21 @@ public class MainActivity extends ActionBarActivity {
         shrink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                show_toast(get_clipboard()); // test del contenuto della clipboard
-                /*
+                // show_toast(get_clipboard()); // test del contenuto della clipboard
                 String link_toshrink = check_clipboard(get_clipboard()); // Controlla la clipboard e salva il contenuto
                 if (link_toshrink != "errore") { // Se il contenuto va bene, si prosegue
                     Editable custom_link = customLink.getText(); // Prendo il valore nel campo testo facoltativo
+                    show_toast("Shrinking...");
                     if (custom_link.length() < 1) { // se il link va bene si prosegue allo shrinking
+                        show_toast("Shrinking...");
                         shrinking(link_toshrink); // se il campo custom è vuoto non c'è personalizzazione
                     } else {
                         custom_shrinking(link_toshrink, custom_link); // altrimenti si procede con lo shrink personalizzato
+                        show_toast("URL shrinkato e copiato nella clipboard!");
                     }
                 } else { // Se il contenuto da errore (non c'è contenuto o non è un URL valido) mostra un avviso
                     show_toast("La clipboard non contiene un URL valido");
                 }
-                */
-
             }
         });
     }
@@ -83,7 +83,9 @@ public class MainActivity extends ActionBarActivity {
     // Mi creo una funzione per prendere il contenuto della clipboard per comodità
     public String get_clipboard(){
         if (is_clipboard()) {
-            return ((ClipboardManager)getSystemService(this.CLIPBOARD_SERVICE)).getPrimaryClip().toString();
+            ClipData cd = ((ClipboardManager)getSystemService(this.CLIPBOARD_SERVICE)).getPrimaryClip();
+            ClipData.Item cdi = cd.getItemAt(cd.getItemCount() -1 );
+            return cdi.getText().toString();
         } else {
             return "";
         }
@@ -91,8 +93,13 @@ public class MainActivity extends ActionBarActivity {
 
     // Mi credo una funzione per impostare il contenuto della clipboard per comodità
     public void set_clipboard(String link) {
+        /*
         ClipData clip = ClipData.newPlainText("label",link);
         ((ClipboardManager)getSystemService(this.CLIPBOARD_SERVICE)).setPrimaryClip(clip);
+        */
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("label",link);
+        clipboard.setPrimaryClip(clip);
     }
 
     // Funzione che dice se la clipboard ha contenuto o no
@@ -102,60 +109,18 @@ public class MainActivity extends ActionBarActivity {
 
     // Funzione che fa la richiesta GET a z0r.it
     public void shrinking(java.lang.CharSequence link){
-        StringBuilder sb = new StringBuilder();
-        URLConnection urlConn = null;
-        InputStreamReader in = null;
-        try {
-            URL url = new URL("http://z0r.it/yourls-api.php?signature=4e4b657a91&action=shorturl&format=simply&url=" + link + "&title=upload_wth_z0r_andr0id");
-            urlConn = url.openConnection();
-            if (urlConn != null)
-                urlConn.setReadTimeout(60 * 1000);
-            if (urlConn != null && urlConn.getInputStream() != null) {
-                in = new InputStreamReader(urlConn.getInputStream(),
-                        Charset.defaultCharset());
-                BufferedReader bufferedReader = new BufferedReader(in);
-                if (bufferedReader != null) {
-                    int cp;
-                    while ((cp = bufferedReader.read()) != -1) {
-                        sb.append((char) cp);
-                    }
-                    bufferedReader.close();
-                }
-            }
-            in.close();
-        } catch (Exception e) {
 
-        }
-        set_clipboard(sb.toString());
+        // HTTP GET ancora da fare
+
+        show_toast("URL shrinkato e copiato nella clipboard!");
     }
 
     // Funzione che fa la richiesta GET a z0r.it con personalizzazione
     public void custom_shrinking(java.lang.CharSequence link, Editable custom_link){
-        StringBuilder sb = new StringBuilder();
-        URLConnection urlConn = null;
-        InputStreamReader in = null;
-        try {
-            URL url = new URL("http://z0r.it/yourls-api.php?signature=4e4b657a91&action=shorturl&keyword=" + custom_link + "&format=simply&url=" + link + "&title=upload_wth_z0r_andr0id");
-            urlConn = url.openConnection();
-            if (urlConn != null)
-                urlConn.setReadTimeout(60 * 1000);
-            if (urlConn != null && urlConn.getInputStream() != null) {
-                in = new InputStreamReader(urlConn.getInputStream(),
-                        Charset.defaultCharset());
-                BufferedReader bufferedReader = new BufferedReader(in);
-                if (bufferedReader != null) {
-                    int cp;
-                    while ((cp = bufferedReader.read()) != -1) {
-                        sb.append((char) cp);
-                    }
-                    bufferedReader.close();
-                }
-            }
-            in.close();
-        } catch (Exception e) {
 
-        }
-        set_clipboard(sb.toString());
+        // HTTP GET ancora da fare
+
+        show_toast("URL shrinkato e copiato nella clipboard!");
     }
 
     // Controlla il contenuto della clipboard
