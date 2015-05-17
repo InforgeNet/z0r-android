@@ -29,6 +29,7 @@ public class MainActivity extends ActionBarActivity {
     EditText customText;
     Button shrink;
     TextView textView;
+    EditText linkText;
 
     String longLink;
     String customLink;
@@ -42,14 +43,16 @@ public class MainActivity extends ActionBarActivity {
         customText = (EditText) this.findViewById(R.id.customText);
         shrink = (Button) this.findViewById(R.id.shrink);
         textView = (TextView) this.findViewById(R.id.textView);
+        linkText = (EditText) this.findViewById(R.id.linkText);
+        linkText.setText(check_clipboard(get_clipboard()));
         shrink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                longLink = check_clipboard(get_clipboard());
+                longLink = linkText.getText().toString().toLowerCase();
                 customLink = customText.getText().toString().toLowerCase().replaceAll("\\s+", "-");
                 url = "http://z0r.it/yourls-api.php?signature=4e4b657a91&action=shorturl&format=simply&url=" + longLink + "&title=upload_wth_z0r_android";
                 customUrl = "http://z0r.it/yourls-api.php?signature=4e4b657a91&action=shorturl&keyword=" + customLink + "&format=simply&url=" + longLink + "&title=upload_wth_z0r_android";
-                if (longLink != "errore") {
+                if (check_clipboard(get_clipboard()) != "") {
                     show_toast("Shrinking...");
                     if (customLink == "") {
                         getShrink task = new getShrink();
@@ -59,10 +62,14 @@ public class MainActivity extends ActionBarActivity {
                         task.execute(new String[]{customUrl});
                     }
                 } else {
-                    show_toast("La clipboard non contiene un URL valido");
+                    show_toast("Invalid URL");
                 }
             }
         });
+
+        ClipboardManager clipBoard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+        clipBoard.addPrimaryClipChangedListener( new ClipboardListener() );
+
     }
 
     public void show_toast(String message) {
@@ -105,11 +112,11 @@ public class MainActivity extends ActionBarActivity {
                 if (match.matches()) {
                     return cb;
                 } else {
-                    return "errore";
+                    return "";
                 }
             }
         } else {
-            return "errore";
+            return "";
         }
     }
 
@@ -139,8 +146,22 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            set_clipboard(result);
-            show_toast("Link shrinkato e copiato nella clipboard!");
+            if (result == "" && customLink.length() > 0) {
+                show_toast("Custom link already exists in database or is reserved");
+            } else if (result == "") {
+                show_toast("Error during URL shrinkig");
+            } else {
+                set_clipboard(result);
+                customText.setText("");
+                show_toast("URL shrinked and copied in the clipboard!");
+            }
+        }
+    }
+
+    class ClipboardListener implements ClipboardManager.OnPrimaryClipChangedListener {
+        public void onPrimaryClipChanged()
+        {
+            linkText.setText(check_clipboard(get_clipboard()));
         }
     }
 }

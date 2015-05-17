@@ -11,10 +11,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="FIRE THE LAZAH!"
-        android:layout_marginTop="95dp"
         android:textSize="30dp"
         android:layout_below="@+id/customText"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="78dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,21 +33,23 @@
         android:id="@+id/customText"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
         android:hint="(optional) Custom link"
         android:textColor="#bfbfbf"
         android:textColorHint="#6d6d6d"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
-    <TextView
-        android:id="@+id/notice"
-        android:text="Your link must be to the clipboard to be shrinked"
-        android:layout_width="wrap_content"
+    <EditText
+        android:id="@+id/linkText"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="44dp" />
+        android:hint="URL to shrink"
+        android:textColor="#bfbfbf"
+        android:textColorHint="#6d6d6d"
+        android:layout_above="@+id/customText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="27dp" />
 
 </RelativeLayout>
