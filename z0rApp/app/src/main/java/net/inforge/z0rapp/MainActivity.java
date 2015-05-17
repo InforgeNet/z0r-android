@@ -1,137 +1,106 @@
 package net.inforge.z0rapp;
 
-import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.nio.charset.Charset;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import java.io.*;
-import java.net.*;
-
-import javax.net.ssl.HttpsURLConnection;
-
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends ActionBarActivity {
 
-    EditText customLink;
+    EditText customText;
     Button shrink;
     TextView textView;
+
+    String longLink;
+    String customLink;
+    String url;
+    String customUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // vengono assegnati gli ID
-        customLink= (EditText) this.findViewById(R.id.customLink);
+        customText = (EditText) this.findViewById(R.id.customText);
         shrink = (Button) this.findViewById(R.id.shrink);
         textView = (TextView) this.findViewById(R.id.textView);
-        // click event del bottone
         shrink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // show_toast(get_clipboard()); // test del contenuto della clipboard
-                String link_toshrink = check_clipboard(get_clipboard()); // Controlla la clipboard e salva il contenuto
-                if (link_toshrink != "errore") { // Se il contenuto va bene, si prosegue
-                    Editable custom_link = customLink.getText(); // Prendo il valore nel campo testo facoltativo
+                longLink = check_clipboard(get_clipboard());
+                customLink = customText.getText().toString().toLowerCase().replaceAll("\\s+", "-");
+                url = "http://z0r.it/yourls-api.php?signature=4e4b657a91&action=shorturl&format=simply&url=" + longLink + "&title=upload_wth_z0r_android";
+                customUrl = "http://z0r.it/yourls-api.php?signature=4e4b657a91&action=shorturl&keyword=" + customLink + "&format=simply&url=" + longLink + "&title=upload_wth_z0r_android";
+                if (longLink != "errore") {
                     show_toast("Shrinking...");
-                    if (custom_link.length() < 1) { // se il link va bene si prosegue allo shrinking
-                        show_toast("Shrinking...");
-                        shrinking(link_toshrink); // se il campo custom è vuoto non c'è personalizzazione
+                    if (customLink == "") {
+                        getShrink task = new getShrink();
+                        task.execute(new String[]{url});
                     } else {
-                        custom_shrinking(link_toshrink, custom_link); // altrimenti si procede con lo shrink personalizzato
-                        show_toast("URL shrinkato e copiato nella clipboard!");
+                        getShrink task = new getShrink();
+                        task.execute(new String[]{customUrl});
                     }
-                } else { // Se il contenuto da errore (non c'è contenuto o non è un URL valido) mostra un avviso
+                } else {
                     show_toast("La clipboard non contiene un URL valido");
                 }
             }
         });
     }
 
-    // Funzione che mostra un toast
     public void show_toast(String message) {
         Context context = getApplicationContext();
         CharSequence text = message;
         int duration = Toast.LENGTH_SHORT;
-
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
     }
 
-    // Mi creo una funzione per prendere il contenuto della clipboard per comodità
-    public String get_clipboard(){
+    public String get_clipboard() {
         if (is_clipboard()) {
-            ClipData cd = ((ClipboardManager)getSystemService(this.CLIPBOARD_SERVICE)).getPrimaryClip();
-            ClipData.Item cdi = cd.getItemAt(cd.getItemCount() -1 );
+            ClipData cd = ((ClipboardManager) getSystemService(this.CLIPBOARD_SERVICE)).getPrimaryClip();
+            ClipData.Item cdi = cd.getItemAt(cd.getItemCount() - 1);
             return cdi.getText().toString();
         } else {
             return "";
         }
     }
 
-    // Mi credo una funzione per impostare il contenuto della clipboard per comodità
     public void set_clipboard(String link) {
-        /*
-        ClipData clip = ClipData.newPlainText("label",link);
-        ((ClipboardManager)getSystemService(this.CLIPBOARD_SERVICE)).setPrimaryClip(clip);
-        */
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("label",link);
+        ClipData clip = ClipData.newPlainText("label", link);
         clipboard.setPrimaryClip(clip);
     }
 
-    // Funzione che dice se la clipboard ha contenuto o no
-    public boolean is_clipboard(){
-        return ((ClipboardManager)getSystemService(this.CLIPBOARD_SERVICE)).hasPrimaryClip();
+    public boolean is_clipboard() {
+        return ((ClipboardManager) getSystemService(this.CLIPBOARD_SERVICE)).hasPrimaryClip();
     }
 
-    // Funzione che fa la richiesta GET a z0r.it
-    public void shrinking(java.lang.CharSequence link){
-
-        // HTTP GET ancora da fare
-
-        show_toast("URL shrinkato e copiato nella clipboard!");
-    }
-
-    // Funzione che fa la richiesta GET a z0r.it con personalizzazione
-    public void custom_shrinking(java.lang.CharSequence link, Editable custom_link){
-
-        // HTTP GET ancora da fare
-
-        show_toast("URL shrinkato e copiato nella clipboard!");
-    }
-
-    // Controlla il contenuto della clipboard
-    public String check_clipboard(String cb){
+    public String check_clipboard(String cb) {
         if (is_clipboard()) { // Se la clipboard è vuota restituisce "errore"
             Pattern url_regex = Pattern.compile("(https?|ftp|file)://[-A-Za-z0-9\\+&@#/%?=~_|!:,.;]*\\.[-A-Za-z0-9\\+&@#/%=~_|():?]+");
             Matcher match = url_regex.matcher(cb);
             if (match.matches()) {
                 return cb;
             } else {
-                cb = "http://"+cb;
+                cb = "http://" + cb;
                 match = url_regex.matcher(cb);
                 if (match.matches()) {
                     return cb;
@@ -144,27 +113,34 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    /* Crea un menu, per ora non serve
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+    private class getShrink extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            String url = params[0];
+            String response = "";
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+            DefaultHttpClient client = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet(url);
+            try {
+                HttpResponse execute = client.execute(httpGet);
+                InputStream content = execute.getEntity().getContent();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+                BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+                String s = "";
+                while ((s = buffer.readLine()) != null) {
+                    response += s;
+                }
+
+            } catch (Exception e) {
+                show_toast(e.toString());
+            }
+            return response;
         }
 
-        return super.onOptionsItemSelected(item);
+        @Override
+        protected void onPostExecute(String result) {
+            set_clipboard(result);
+            show_toast("Link shrinkato e copiato nella clipboard!");
+        }
     }
-    */
 }
